@@ -97,15 +97,17 @@ def get_classifications (value):
     #TA Custom NER API works in two steps, first you post the job, afterwards you get the result
     response_job = requests.post(endpoint, data = body_json, headers = header)
     print ('response is: ', response_job.headers)
-    time.sleep(2) # Let some time to process the job, you could do active polling 
     jobURL = response_job.headers["operation-location"]
+
+    # API: https://learn.microsoft.com/en-us/rest/api/language/text-analysis-runtime/job-status
     response = requests.get(jobURL, None, headers=header)
     dict=json.loads(response.text)
+
     #sometimes the TA processing time will be longer, in that case we need to try again after a while. You can probably add a more sophisticated retry policy here
-    if (dict['status']!='succeeded'):
+    while dict['status'] not in ['cancelled', 'failed', 'partiallyCompleted', 'succeeded']:
         time.sleep(3)
-        response = requests.get(endpoint+'/jobs/'+jobid, None, headers=header)
         #print ('response is: ', response.text)
+        response = requests.get(endpoint+'/jobs/'+dict['jobid'], None, headers=header)
         dict=json.loads(response.text)    
     classifications=dict['tasks']['items'][0]['results']['documents'][0]['class']
     #for your reference, output of the TA Cognitive Service is like {  "jobId": "9x",  "lastUpdateDateTime": "2021-11-14T11:45:09Z",  "createdDateTime": "2021-11-14T11:45:08Z",  "expirationDateTime": "2021-11-15T11:45:08Z",  "status": "succeeded",  "errors": [],  "displayName": "Extracting custom text classification",  "tasks": {    "completed": 1,    "failed": 0,    "inProgress": 0,    "total": 1,    "customMultiClassificationTasks": [{      "lastUpdateDateTime": "2021-11-14T11:45:09.4757945Z",      "state": "succeeded",      "results": {        "documents": [{          "id": "1",          "classifications": [{            "category": "Action",            "confidenceScore": 0.77          }, {            "category": "Drama",            "confidenceScore": 1.0          }, {            "category": "Mystery",            "confidenceScore": 0.9          }],          "warnings": []        }],        "errors": [],        "projectName": "p",        "deploymentName": "prod"      }    }]  }}
