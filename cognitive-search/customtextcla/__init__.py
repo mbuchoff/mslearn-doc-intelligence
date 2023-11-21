@@ -107,7 +107,7 @@ def get_classifications (value):
     while dict['status'] not in ['cancelled', 'failed', 'partiallyCompleted', 'succeeded']:
         time.sleep(3)
         #print ('response is: ', response.text)
-        response = requests.get(endpoint+'/jobs/'+dict['jobid'], None, headers=header)
+        response = requests.get(jobURL+'&jobid='+dict['jobId'], None, headers=header)
         dict=json.loads(response.text)    
     classifications=dict['tasks']['items'][0]['results']['documents'][0]['class']
     #for your reference, output of the TA Cognitive Service is like {  "jobId": "9x",  "lastUpdateDateTime": "2021-11-14T11:45:09Z",  "createdDateTime": "2021-11-14T11:45:08Z",  "expirationDateTime": "2021-11-15T11:45:08Z",  "status": "succeeded",  "errors": [],  "displayName": "Extracting custom text classification",  "tasks": {    "completed": 1,    "failed": 0,    "inProgress": 0,    "total": 1,    "customMultiClassificationTasks": [{      "lastUpdateDateTime": "2021-11-14T11:45:09.4757945Z",      "state": "succeeded",      "results": {        "documents": [{          "id": "1",          "classifications": [{            "category": "Action",            "confidenceScore": 0.77          }, {            "category": "Drama",            "confidenceScore": 1.0          }, {            "category": "Mystery",            "confidenceScore": 0.9          }],          "warnings": []        }],        "errors": [],        "projectName": "p",        "deploymentName": "prod"      }    }]  }}
